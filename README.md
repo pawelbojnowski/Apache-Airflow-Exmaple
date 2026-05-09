@@ -97,7 +97,7 @@ Credentials can be changed in `.env` (based on `.env.example`).
 
 | DAG                  | Schedule     | Description                                              |
 |----------------------|--------------|----------------------------------------------------------|
-| `hello_world`        | `@daily`     | Two PythonOperator tasks passing a value between them    |
+| `hello_world`        | `@daily`     | Two TaskFlow tasks passing a value between them          |
 | `etl_pipeline`       | `@daily`     | Extract → Transform (validation) → Load                  |
 | `scheduled_report`   | `0 8 * * 1`  | Weekly report every Monday at 08:00 UTC                  |
 | `postgres_explorer`  | manual       | Lists all tables and sample data from PostgreSQL         |
@@ -129,4 +129,39 @@ dags/       # DAG definitions (Python)
 logs/       # Task logs (git-ignored)
 plugins/    # Custom plugins / operators
 config/     # Airflow configuration overrides
+tests/      # Unit tests for DAGs
 ```
+
+## Unit tests
+
+Tests run locally without Docker using a virtual environment.
+
+### Setup (once)
+
+```bash
+sh run-install-tests-dependency.sh
+```
+
+Installs all dependencies (`apache-airflow`, `pytest`, `psycopg2-binary`) using the official Airflow constraint file to ensure compatible versions.
+
+### Running tests
+
+```bash
+./run-tests.sh
+````
+# Single test file
+```bash
+.venv/bin/pytest tests/test_etl_pipeline.py -v
+```
+
+### What is tested
+
+| File                       | What it covers                                      |
+|----------------------------|-----------------------------------------------------|
+| `test_dag_integrity.py`    | All DAGs load without errors, correct task count, `catchup=False`, tags |
+| `test_etl_pipeline.py`     | `extract` and `transform` logic — name cleaning, invalid record filtering |
+| `test_scheduled_report.py` | `generate_report` output format, revenue formatting, churn percentage |
+
+### Dependencies
+
+Dependencies are listed in `requirements.txt`. Always install with the Airflow constraint file (as `run-install-test-dependecy.sh` does) to avoid version conflicts.
